@@ -15,15 +15,20 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     cy.get('#lastName').type('Dani')
     cy.get('#email').type('dani@email.com')
     cy.get('#open-text-area').type('Teste')
-    cy.get('button[type="submit"]').click()
+    cy.get('button[type="submit"]').click()//pega um botão que tem o type submit e clica
+    //cy.contains('button', 'Enviar').click() outra maneira de fazer o que está na linha de cima
 
     cy.get('.success').should('be.visible')
   })
 
+  //congelar o relógio do navegador, para por exemplo, ao invés de ficar esperando 3s para desaparecer a imagem.
+//eu só validar e seguir. Então adicionei o clock nesse teste
+//é requisito a mensagem de sucesso desaparecer. Por isso agora valido isso, mas com o tick eu perco menos tempo com isso.
   //esse delay é pq eu tive que digitar um texto longo. Isso gera um tempo maior na execução.
   //Porém, como a automação tem que ser o mais rápida possível, eu mudo o tempo de digitação desse texto pra 0.
-  it('preenche os campos obrigatórios e envia o formuário', () => {
+  it.only('preenche os campos obrigatórios e envia o formuário', () => {
     const longText = 'Teste, teste, teste, teste, Teste, teste, teste, teste, Teste, teste, teste, teste, Teste, teste, teste, teste, Teste, teste, teste, teste, Teste, teste, teste, teste '
+    cy.clock()
     cy.get('#firstName').type('Dani')
     cy.get('#lastName').type('Dani')
     cy.get('#email').type('dani@email.com')
@@ -31,6 +36,8 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     cy.get('button[type="submit"]').click()
 
     cy.get('.success').should('be.visible')
+    cy.tick(3000)
+    cy.get('.success').should('not.be.visible')
   })
 
   it('exibe mensagem de erro ao submeter o formulário com um email com formato inválida', () => {
@@ -126,7 +133,7 @@ it.only('seleciona um arquivo utilizando uma fixture para a qual foi dada um ali
 })
 
 it.only('verifica que a política de privacidade abre em outra aba sem a necessidade de um clique', () => {
-  cy.get('#privacy a').should('have.attr', 'target', '_blank')
+  cy.get('#privacy a').should('have.attr', 'target', '_blank')//privacy a... elemento a dentro do elemento que contém id privacy
 })
 
 it.only('acessa a página da política de privacidade removendo o target e então clicando no link', () => {
@@ -134,6 +141,27 @@ it.only('acessa a página da política de privacidade removendo o target e entã
   cy.contains('Talking About Testing').should('be.visible')
 })
 
+//Com o comando .invoke('show'), você pode forçar a exibição de um elemento HTML que esteja escondido, com um estilo display: none;
+it('exibe e esconde as mensagens de sucesso e erro usando o .invoke', () => {
+  cy.get('.success')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Mensagem enviada com sucesso.')
+    .invoke('hide')
+    .should('not.be.visible')
+  cy.get('.error')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Valide os campos obrigatórios!')
+    .invoke('hide')
+    .should('not.be.visible')
+})
 
-
+//aquele exemplo onde eu mando um texto longo "texto, texto, texto......" há uma maneira mais inteligente de fazer isso
+it.only('preenche a area de texto usando o comando invoke', () => {
+  const longText = Cypress._.repeat('0123456789', 20)
+  cy.get('#open-text-area').invoke('val', longText).should('have.value', longText)
+})
 })
